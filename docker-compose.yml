@@ -1,0 +1,34 @@
+services:
+  dev: &dev
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: gnnsample-dev
+    # Intel integrated GPU through WSL2 (Docker Desktop on Windows).
+    devices:
+      - /dev/dxg
+    volumes:
+      - ./:/work
+      - /usr/lib/wsl:/usr/lib/wsl:ro
+    working_dir: /work
+    # DataLoader workers pass ~164 MB feature batches through /dev/shm; Docker's default
+    # 64 MB makes them fail and the main process wait forever.
+    shm_size: "4gb"
+    environment:
+      # The iGPU caps one allocation at 1.07 GB by default; relaxed limits let a feature
+      # table or CSC array exceed that (Level Zero relaxed allocation limits).
+      - UR_L0_ENABLE_RELAXED_ALLOCATION_LIMITS=1
+
+  # gnnsample-dev + Intel VTune (docker/vtune/Dockerfile). Profilers need ptrace and
+  # perf_event access inside the container.
+  vtune:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: docker/vtune/Dockerfile
+    image: gnnsample-vtune
+    cap_add:
+      - SYS_ADMIN
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined

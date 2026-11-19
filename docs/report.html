@@ -1,0 +1,567 @@
+<title>gnnsample Phase 5 Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column (~70ch) with charts allowed to run wider; summary first, then
+   the measured story in the order it happened, decision records last. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #12151a;
+  --ink-2: #4a5160;
+  --ink-3: #7a8191;
+  --rule: #dfe3ea;
+  --grid: #e9ecf1;
+  --accent: #2a78d6;
+  --accent-soft: #e3eefb;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --seq-light: #86b6ef; --seq-dark: #2a78d6;
+  --base: #9aa1ad;
+  --good: #1b7f4b; --warn: #a86400; --bad: #c43c3b;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111418; --surface: #181c22; --ink: #eef0f3; --ink-2: #b4bac5; --ink-3: #8a91a0;
+    --rule: #2a3039; --grid: #232932; --accent: #5598e7; --accent-soft: #1b2a3d;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --seq-light: #1c5cab; --seq-dark: #5598e7;
+    --base: #6b7280; --good: #3fbf7f; --warn: #e0a040; --bad: #e66767;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111418; --surface: #181c22; --ink: #eef0f3; --ink-2: #b4bac5; --ink-3: #8a91a0;
+  --rule: #2a3039; --grid: #232932; --accent: #5598e7; --accent-soft: #1b2a3d;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --seq-light: #1c5cab; --seq-dark: #5598e7;
+  --base: #6b7280; --good: #3fbf7f; --warn: #e0a040; --bad: #e66767;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 72px; display: grid; gap: 56px; }
+header { display: grid; gap: 14px; max-width: 72ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 27px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0; }
+p { margin: 0; max-width: 72ch; }
+.lede { font-size: 19px; color: var(--ink-2); }
+section { display: grid; gap: 18px; }
+.prose { display: grid; gap: 12px; }
+code, .mono { font-family: var(--mono); font-size: .86em; }
+.muted { color: var(--ink-2); }
+.small { font-size: 14px; color: var(--ink-3); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; display: grid; gap: 4px; align-content: start; }
+.kpi .v { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 15px; color: var(--ink-2); }
+.kpi .s { font-size: 13px; color: var(--ink-3); }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 18px 14px; display: grid; gap: 10px; min-width: 0; }
+figcaption { font-size: 14px; color: var(--ink-2); max-width: 80ch; }
+.chart { width: 100%; overflow-x: auto; }
+.chart svg { display: block; width: 100%; height: auto; min-width: 560px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .02em; color: var(--ink-2); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+.pill { font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid currentColor; }
+.pill.keep { color: var(--good); } .pill.drop { color: var(--bad); } .pill.open { color: var(--warn); } .pill.fixed { color: var(--ink-3); }
+.note { border-left: 3px solid var(--warn); background: var(--surface); padding: 12px 16px; border-radius: 0 8px 8px 0; display: grid; gap: 6px; max-width: 80ch; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.two > * { min-width: 0; }
+pre { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.5; margin: 0; }
+details summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+details summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+.svg-text { fill: var(--ink-2); font-family: var(--body); font-size: 13px; }
+.svg-strong { fill: var(--ink); font-family: var(--body); font-size: 13px; font-weight: 600; }
+.svg-axis { stroke: var(--rule); }
+.svg-grid { stroke: var(--grid); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">gnnsample · Phase 5 report · 24 Oct 2026 · Intel Core Ultra 7 265U iGPU</div>
+    <h1>A deterministic GPU neighbour sampler for GraphSAGE, measured end to end</h1>
+    <p class="lede">We built a SYCL multi-hop neighbour sampler for fanout [15, 10, 5], optimized it in measured
+      steps on a laptop iGPU, and checked it against PyG on speed and accuracy. Every number below comes from a
+      logged run; projections are labelled as such.</p>
+  </header>
+
+  <section aria-labelledby="summary">
+    <h2 id="summary">Results at a glance</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="v">6.4–7.9×</div><div class="l">faster per minibatch than pyg-lib</div><div class="s">products, LiveJournal, Orkut; batch 1024; AC power; paired on the same batches</div></div>
+      <div class="kpi"><div class="v">1.35×</div><div class="l">faster training step than PyG's best setting</div><div class="s">ogbn-products, mean ms/step vs PyG with 2 loader workers; ours uses ~1 CPU core</div></div>
+      <div class="kpi"><div class="v">p = 0.90</div><div class="l">no accuracy difference vs PyG</div><div class="s">test 0.7679 vs 0.7669 over 3 seeds; val curves track within 0.002</div></div>
+      <div class="kpi"><div class="v">5.9×</div><div class="l">faster than pyg-lib on Twitter-2010</div><div class="s">1.47 B edges, 41.7 M nodes: 7.9 vs 46.4 ms per minibatch, 22 M sampled edges/s</div></div>
+      <div class="kpi"><div class="v">bit-exact</div><div class="l">same output as the NumPy reference</div><div class="s">67 tests: every option combination, empty batches, option switching, file loading</div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="what">
+    <h2 id="what">What was built</h2>
+    <div class="prose">
+      <p>The sampler takes a CSC graph and a batch of seed nodes and returns the 3-hop sampled subgraph in the
+        layout PyG's <code>NeighborLoader</code> produces: each hop expands only the nodes discovered by the
+        previous one, picks up to <em>k</em> in-neighbours without replacement (Floyd's algorithm), deduplicates
+        the frontier and assigns local ids in order of first appearance.</p>
+      <p>Random draws come from a counter-based Philox generator keyed on (seed, hop, node, draw), so results
+        do not depend on thread mapping or device. The CPU (SYCL) and iGPU builds return byte-identical
+        subgraphs, and a NumPy reference sampler is the source of truth in tests. Features are gathered on the
+        GPU from a zero-copy host table and written straight into PyTorch XPU tensors, so nothing crosses
+        between CPU and GPU except seed ids and per-hop counts.</p>
+      <p class="muted">Stack: Intel DPC++ 2026.1.0 (matched to PyTorch 2.14.1+xpu's SYCL runtime), nanobind,
+        PyG 2.8.1 / pyg-lib 0.9.0 as the baseline, all in Docker on WSL2.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="ladder">
+    <h2 id="ladder">Optimization ladder</h2>
+    <p>Each optimization was a run-time switch, measured by sampling every minibatch with both variants in
+      alternating order in one process. The iGPU's speed drifted up to 2× between runs, so only these paired
+      ratios are reliable. The line multiplies each kept step's paired ratio; hollow markers are a direct
+      paired measurement of v1 against the sub-group stage.</p>
+    <figure>
+      <div class="legend" id="ladder-legend"></div>
+      <div class="chart" id="ladder-chart"></div>
+      <figcaption>Relative per-batch sampling time (v1 = 1.0), fanout [15, 10, 5], batch 1024, iGPU. Compounding
+        noisy ratios overstates the products gain by about 8% and understates LiveJournal by about 20% against
+        the direct anchors. Carrying the products anchor through the two later steps gives about 0.49 of v1,
+        against 0.46 for the full chain.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step (kept)</th><th>Why it helps</th><th class="num">products</th><th class="num">LiveJournal</th><th class="num">Orkut</th></tr></thead>
+        <tbody id="steps-body"></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tried and dropped</th><th>What the measurement showed</th><th class="num">products</th><th class="num">LiveJournal</th><th class="num">Orkut</th></tr></thead>
+        <tbody id="dropped-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="perbatch">
+    <h2 id="perbatch">Per-minibatch sampling vs pyg-lib</h2>
+    <figure>
+      <div class="legend" id="pb-legend"></div>
+      <div class="chart" id="pb-chart"></div>
+      <figcaption>Milliseconds per minibatch on AC power, paired on the same 40 batches (Orkut: its 30 full
+        batches). pyg-lib runs one batch per call on one CPU thread, as each NeighborLoader worker does. "Ours"
+        is the configuration up to sub-group sampling; the two later steps (another ~6–9%) were measured only
+        against our own previous default because pyg-lib timing became unstable on the host.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="scale">
+    <h2 id="scale">At scale: Twitter-2010</h2>
+    <p>Twitter-2010 has 41.7 M nodes and 1.47 B edges; its CSC is 6.2 GB, the largest graph this laptop can hold.
+      We decoded the publisher's transposed WebGraph file straight into an in-neighbour CSC (about 4 minutes,
+      1,468,364,884 edges: the published count minus 298 self loops) and sampled the same seed batches with both
+      samplers. Seeds are a random 1% of nodes, the convention gSampler uses for graphs without a training split.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Twitter-2010, batch 1024, [15, 10, 5]</th><th class="num">ms per minibatch</th><th class="num">sampled edges/s</th><th class="num">graph load</th><th class="num">speedup</th></tr></thead>
+        <tbody>
+          <tr><td>pyg-lib (CPU, int32 indices)</td><td class="num">46.4</td><td class="num">3.8 M</td><td class="num">116 s</td><td class="num">1.0×</td></tr>
+          <tr><td>ours, v1</td><td class="num">13.05</td><td class="num">13.4 M</td><td class="num">63 s</td><td class="num">3.6×</td></tr>
+          <tr><td><strong>ours, final defaults</strong></td><td class="num"><strong>7.93</strong></td><td class="num"><strong>22.1 M</strong></td><td class="num">63 s</td><td class="num"><strong>5.9×</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>Final against v1 is 0.569 when paired batch by batch (1.76×), in line with the smaller graphs, so the
+        optimizations hold at 1.47 B edges. Against pyg-lib the two samplers had to run in separate processes for
+        memory reasons, so that ratio is not interleaved; both runs were on AC power and drew about 175 K edges per
+        minibatch.</p>
+      <p><strong>A memory trap specific to WSL2.</strong> The iGPU's device memory is allocated on the Windows side,
+        outside the Linux VM's limit. The first attempt read the 5.9 GB edge file through the VM's page cache while
+        copying it to the device; together with Windows that exceeded the laptop's 15.5 GB, Windows paged the VM
+        out and Docker stopped responding. The loader now streams the file to the device in 64 MB chunks and drops
+        each chunk from the page cache. Windows' free memory then bottomed at 337 MB during the load and settled at
+        1.3–2.3 GB, which is the practical ceiling of this machine.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="gpustages">
+    <h2 id="gpustages">Where the sampler's GPU time goes</h2>
+    <figure>
+      <div class="legend" id="st-legend"></div>
+      <div class="chart" id="st-chart"></div>
+      <figcaption>GPU time per stage for one products minibatch, from barrier timestamps on a profiling queue
+        (no host waits). Before: packed hash + no-sync, 25.6 ms in total. After: final defaults, 15.3 ms.
+        Seeds rose because that stage now also initializes the on-device hop state.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="bottleneck">
+    <h2 id="bottleneck">Is sampling the bottleneck? Three measurements</h2>
+    <div class="prose">
+      <p>Before writing kernels we measured where a PyG training step spends its time. The first two answers
+        were wrong, for reasons worth knowing.</p>
+      <p><strong>1. Sampling looked like 7% of the step.</strong> The model ran every layer over all ~410 K
+        sampled nodes. With layer trimming (each layer computes only what later layers need) the GraphSAGE step
+        fell from 1.91 s to 0.30 s on the iGPU.</p>
+      <p><strong>2. Feature gather looked like 47%.</strong> That was our bug: pandas returned the feature table
+        column-major, so every row gather touched 100 cache lines. Fixed, the gather takes 38 ms.</p>
+      <p><strong>3. Corrected:</strong> sampling is 30% of a PyG step and data preparation 49%. Our pipeline
+        cuts data preparation from about 232 ms to about 43 ms.</p>
+    </div>
+    <figure>
+      <div class="legend" id="bd-legend"></div>
+      <div class="chart" id="bd-chart"></div>
+      <figcaption>Serial training step on ogbn-products (median of synchronized stages), iGPU, trimmed
+        GraphSAGE 3×256. PyG: pyg-lib sampling and feature gather on the CPU, then a copy to the GPU. Ours:
+        sampling and gather on the GPU, tensors written in place.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="e2e">
+    <h2 id="e2e">Training step against PyG at its best</h2>
+    <p>Real PyG overlaps CPU sampling with GPU training through DataLoader workers, so the fair baseline is wall
+      time per step with workers. Ours samples minibatch <em>i+1</em> on its own queue while PyTorch trains
+      minibatch <em>i</em>.</p>
+    <figure>
+      <div class="legend" id="e2e-legend"></div>
+      <div class="chart" id="e2e-chart"></div>
+      <figcaption>Steady-state ms per training step on ogbn-products, 60 minibatches, AC power. Bars show the
+        mean, which sets epoch time; ticks show the median. PyG with 4 workers stalls often (mean far above
+        median), most likely from memory pressure in the 7.5 GB container.</figcaption>
+    </figure>
+    <div class="prose">
+      <p>The step is 1.35× faster on the mean and 1.20× on the median. It cannot go much further on this
+        laptop: model compute on the iGPU is about 235 ms of every step, so even free data preparation caps the
+        gain near 1.6× (Amdahl). Overlap adds only ~4% here because our kernels and PyTorch's share the same
+        64 execution units and memory bandwidth.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="acc">
+    <h2 id="acc">Accuracy parity</h2>
+    <p>Same model initialization, seed order and hyperparameters per seed; only the sampler differs. Both models
+      are scored by the same evaluator (pyg-lib), so a sampler bug could only show up through training.</p>
+    <div class="two">
+      <figure>
+        <div class="legend" id="acc-legend"></div>
+        <div class="chart" id="acc-chart"></div>
+        <figcaption>Validation accuracy per epoch, mean of 3 seeds. ogbn-products, GraphSAGE 3×256,
+          [15, 10, 5], batch 1024, Adam lr 1e-3.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Seed</th><th class="num">Test, ours</th><th class="num">Test, PyG</th><th class="num">Epoch s, ours</th><th class="num">Epoch s, PyG</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td class="num">0.7770</td><td class="num">0.7766</td><td class="num" rowspan="3">55.3</td><td class="num" rowspan="3">72.5</td></tr>
+            <tr><td>1</td><td class="num">0.7657</td><td class="num">0.7667</td></tr>
+            <tr><td>2</td><td class="num">0.7610</td><td class="num">0.7574</td></tr>
+            <tr><td><strong>Mean ± sd</strong></td><td class="num"><strong>0.7679 ± 0.0082</strong></td><td class="num"><strong>0.7669 ± 0.0096</strong></td><td class="num" colspan="2">Welch t: val p = 0.63, test p = 0.90</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="small">Test accuracy is on a fixed random 50 K subset of the 2.2 M test nodes. Epoch time is the
+      mean of epochs 2–5 (epoch 1 includes kernel compilation).</p>
+  </section>
+
+  <section aria-labelledby="decisions">
+    <h2 id="decisions">Decision records</h2>
+    <p>Every design choice was recorded with its reason, the strongest alternative, what happens if it is wrong,
+      and the measurement that settles it. Full text: <code>gnnsample/docs/decisions.md</code>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Decision</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody id="dec-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="limits">
+    <h2 id="limits">Limitations and next steps</h2>
+    <div class="prose">
+      <p><strong>One laptop iGPU.</strong> All results come from a 15 W Intel iGPU under WSL2, where a host
+        sync costs ~0.6 ms and training is slow. The gap to PyG should widen on a discrete GPU, where data
+        preparation dominates the step (published: sampling is 46–96% of PyG/DGL steps on V100/A100), but
+        that is a projection until measured.</p>
+      <p><strong>No GPU state-of-the-art comparison yet.</strong> DGL GraphBolt, gSampler and cuGraph-PyG run
+        only on CUDA. Our expected standing: competitive with DGL's GPU sampler on kernels, likely behind
+        gSampler, behind GraphBolt end to end until overlap is measured on a discrete GPU. Phase 4b ports the
+        SYCL code to the CUDA backend and runs all of them, plus a plain-CUDA control kernel to price SYCL.</p>
+      <p><strong>Scale.</strong> Twitter-2010 is the largest graph this laptop holds, and only for sampling:
+        end-to-end training would also need features for 41.7 M nodes, which do not fit beside the graph.
+        Friendster's CSC alone is ~15 GB and needs a larger machine.</p>
+      <p><strong>Measurement hygiene.</strong> Two runs were affected by host conditions (battery throttling,
+        CPU contention); their absolute numbers are excluded. Every log now records the power state, every
+        long run has a timeout, and a watcher checks progress every 5 minutes.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="repro">
+    <h2 id="repro">Reproduce</h2>
+    <pre>docker compose build                                  # DPC++ 2026.1.0 + PyTorch XPU image
+sh tools/run_logged.sh test 1800 python -m pytest -q tests/
+python data/prepare.py products                       # also livejournal, orkut
+python bench/ablate.py --graph products --variants 8169,0     # final vs v1, paired
+python bench/train_e2e.py --config ours-overlap               # end-to-end step
+python bench/accuracy.py --sampler ours --seed 0              # accuracy parity
+python bench/accuracy_report.py</pre>
+    <p class="small">Logs: <code>results/logs/</code>. Raw results: <code>results/*.jsonl</code>,
+      <code>results/accuracy/</code>.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function el(tag, attrs, parent, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function svg(id, w, h, label) {
+    const host = document.getElementById(id);
+    host.innerHTML = "";
+    const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": label }, host);
+    return s;
+  }
+  function tip(node, text) { el("title", {}, node, text); }
+  function legend(id, items) {
+    document.getElementById(id).innerHTML = items.map(([c, t]) =>
+      `<span><i class="sw" style="background:var(${c})"></i>${t}</span>`).join("");
+  }
+  const fmt = (v, d = 2) => v.toFixed(d);
+
+  // ---- Optimization ladder ------------------------------------------------------------
+  const steps = [
+    ["v1", "baseline: per-hop syncs, split hash arrays, full table reset", null],
+    ["packed hash", "key, local id and first edge in one 16-byte slot: one cache line per edge", [0.833, 0.933, 0.846]],
+    ["no-sync", "counts stay on the GPU, launches sized by upper bounds: 1 host sync per batch instead of 7", [0.752, 0.816, 0.849]],
+    ["assign-scan + slot32", "first occurrence read from the scan; 32-bit slot indices", [0.970, 0.975, 0.959]],
+    ["gen tags", "generation-tagged 16-byte slots: no 32 MB table reset per batch", [0.896, 0.819, 0.945]],
+    ["sub-group", "16 lanes per frontier node: Floyd draws in parallel, k loads in flight", [0.959, 0.982, 0.896]],
+    ["label early", "small table too: known nodes labelled at insert, relabel touches only repeats; half-size table", [0.927, 0.907, 0.920]],
+    ["direct map", "node id is the slot: no key CAS, no probing; dead node_slot write removed", [0.943, 0.966, 0.967]],
+  ];
+  const graphs = ["products", "LiveJournal", "Orkut"];
+  const gcol = ["--s1", "--s2", "--s3"];
+  const anchors = [0.566, 0.495, 0.592]; // direct paired v1 vs sub-group stage (AC run)
+  const cum = graphs.map((_, g) => { let c = 1; return steps.map(s => (s[2] ? (c *= s[2][g]) : c)); });
+
+  document.getElementById("steps-body").innerHTML = steps.slice(1).map(s =>
+    `<tr><td><strong>${s[0]}</strong></td><td>${s[1]}</td>${s[2].map(v => `<td class="num">${fmt(v, 3)}</td>`).join("")}</tr>`).join("") +
+    `<tr><td><strong>All kept steps</strong></td><td>product of the paired ratios</td>${cum.map(c => `<td class="num"><strong>${fmt(c[c.length - 1], 2)}</strong></td>`).join("")}</tr>`;
+  const dropped = [
+    ["fast scan", "scans were never the bottleneck; host-wait profiling had inflated them", [0.994, 1.005, 0.997]],
+    ["clear only used slots", "410 K scattered writes cost more than one 32 MB streaming fill", [1.200, 1.142, 1.220]],
+    ["Philox 4-word reuse", "sampling is memory-latency bound, not RNG bound", [1.018, 1.012, 1.006]],
+    ["warp-aggregated inserts", "not built: only 0.4–2.9% of inserts share a key within a 16-lane group", null],
+    ["fuse relabel into next hop", "not built: saves a ~10–30 µs launch; relabel's cost is random table reads", null],
+  ];
+  document.getElementById("dropped-body").innerHTML = dropped.map(d =>
+    `<tr><td><strong>${d[0]}</strong></td><td>${d[1]}</td>${d[2] ? d[2].map(v => `<td class="num">${fmt(v, 3)}</td>`).join("") : `<td class="num">–</td><td class="num">–</td><td class="num">–</td>`}</tr>`).join("");
+
+  function drawLadder() {
+    const W = 960, H = 380, L = 70, R = 130, T = 18, B = 74;
+    const s = svg("ladder-chart", W, H, "Cumulative relative sampling time per optimization step for three graphs");
+    const x = i => L + i * (W - L - R) / (steps.length - 1);
+    const y0 = 0.4, y1 = 1.0, y = v => T + (y1 - v) / (y1 - y0) * (H - T - B);
+    for (let v = 0.4; v <= 1.0001; v += 0.1) {
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "svg-grid" }, s);
+      el("text", { x: L - 10, y: y(v) + 4, "text-anchor": "end", class: "svg-text" }, s, fmt(v, 1));
+    }
+    el("text", { x: 14, y: T + (H - T - B) / 2, class: "svg-text", transform: `rotate(-90 14 ${T + (H - T - B) / 2})`, "text-anchor": "middle" }, s, "time vs v1");
+    steps.forEach((st, i) => {
+      const t = el("text", { x: x(i), y: H - B + 20, "text-anchor": "end", class: "svg-text", transform: `rotate(-28 ${x(i)} ${H - B + 20})` }, s, st[0]);
+    });
+    graphs.forEach((g, gi) => {
+      const pts = cum[gi].map((v, i) => `${x(i)},${y(v)}`).join(" ");
+      el("polyline", { points: pts, fill: "none", stroke: css(gcol[gi]), "stroke-width": 2, "stroke-linejoin": "round" }, s);
+      cum[gi].forEach((v, i) => {
+        const c = el("circle", { cx: x(i), cy: y(v), r: 4.5, fill: css(gcol[gi]), stroke: css("--surface"), "stroke-width": 2 }, s);
+        tip(c, `${g} · ${steps[i][0]}: ${fmt(v, 3)} of v1`);
+        const hit = el("circle", { cx: x(i), cy: y(v), r: 11, fill: "transparent" }, s); tip(hit, `${g} · ${steps[i][0]}: ${fmt(v, 3)} of v1`);
+      });
+      const a = el("circle", { cx: x(5), cy: y(anchors[gi]), r: 6, fill: css("--surface"), stroke: css(gcol[gi]), "stroke-width": 2 }, s);
+      tip(a, `${g}: direct paired measurement v1 → sub-group = ${fmt(anchors[gi], 3)}`);
+    });
+    // End labels: sorted by value and pushed apart so close lines stay readable.
+    const ends = graphs.map((g, gi) => ({ g, v: cum[gi][cum[gi].length - 1] }))
+      .sort((a, b) => b.v - a.v);
+    let prev = -Infinity;
+    ends.forEach(e => {
+      const ly = Math.max(y(e.v) + 4, prev + 16);
+      prev = ly;
+      el("text", { x: W - R + 10, y: ly, class: "svg-strong" }, s, `${e.g} ${fmt(e.v, 2)}`);
+    });
+  }
+  legend("ladder-legend", [["--s1", "products"], ["--s2", "LiveJournal"], ["--s3", "Orkut"]]);
+  document.getElementById("ladder-legend").insertAdjacentHTML("beforeend",
+    `<span><i class="sw" style="background:transparent;border:2px solid var(--ink-3);border-radius:50%"></i>direct v1 → sub-group measurement</span>`);
+
+  // ---- Grouped horizontal bars: per-batch ms -----------------------------------------
+  const pb = [["products", 148.5, 32.4, 18.3], ["LiveJournal", 69.5, 19.7, 9.4], ["Orkut", 168.8, 45.2, 26.5]];
+  const pbSeries = [["pyg-lib (1 process)", "--base"], ["ours v1", "--seq-light"], ["ours, optimized", "--seq-dark"]];
+  function drawPerBatch() {
+    const W = 960, rowH = 30, gap = 22, L = 120, R = 150, T = 10;
+    const H = T + pb.length * (3 * rowH + gap) + 30;
+    const s = svg("pb-chart", W, H, "Per-minibatch sampling time for pyg-lib and our sampler on three graphs");
+    const max = 180, x = v => L + v / max * (W - L - R);
+    for (let v = 0; v <= max; v += 30) {
+      el("line", { x1: x(v), x2: x(v), y1: T, y2: H - 30, class: "svg-grid" }, s);
+      el("text", { x: x(v), y: H - 10, "text-anchor": "middle", class: "svg-text" }, s, `${v} ms`);
+    }
+    pb.forEach((row, gi) => {
+      const top = T + gi * (3 * rowH + gap);
+      el("text", { x: L - 12, y: top + 1.5 * rowH + 4, "text-anchor": "end", class: "svg-strong" }, s, row[0]);
+      [1, 2, 3].forEach((k, j) => {
+        const v = row[k], yy = top + j * rowH + 4, h = rowH - 8;
+        const r = el("rect", { x: L, y: yy, width: Math.max(2, x(v) - L), height: h, rx: 4, fill: css(pbSeries[j][1]) }, s);
+        tip(r, `${row[0]} · ${pbSeries[j][0]}: ${v} ms`);
+        const speed = k === 1 ? "" : ` · ${fmt(row[1] / v, 1)}× vs pyg-lib`;
+        el("text", { x: x(v) + 8, y: yy + h / 2 + 4, class: k === 3 ? "svg-strong" : "svg-text" }, s, `${v} ms${speed}`);
+      });
+    });
+  }
+  legend("pb-legend", pbSeries.map(([t, c]) => [c, t]));
+
+  // ---- GPU stage before/after --------------------------------------------------------
+  const stages = [["sample", 7.5, 4.0], ["hash insert", 4.0, 3.3], ["assign", 4.0, 3.0], ["reset", 3.2, 0.0],
+    ["relabel", 2.4, 0.8], ["flag", 2.3, 1.6], ["scans", 1.6, 1.1], ["count", 0.5, 0.5], ["seeds", 0.1, 1.0]];
+  function drawStages() {
+    const W = 960, rowH = 36, L = 120, R = 70, T = 8;
+    const H = T + stages.length * rowH + 30;
+    const s = svg("st-chart", W, H, "GPU time per sampler stage before and after the hash and sampling optimizations");
+    const max = 8, x = v => L + v / max * (W - L - R);
+    for (let v = 0; v <= max; v += 1) {
+      el("line", { x1: x(v), x2: x(v), y1: T, y2: H - 30, class: "svg-grid" }, s);
+      el("text", { x: x(v), y: H - 10, "text-anchor": "middle", class: "svg-text" }, s, `${v} ms`);
+    }
+    stages.forEach((st, i) => {
+      const top = T + i * rowH;
+      el("text", { x: L - 12, y: top + rowH / 2 + 4, "text-anchor": "end", class: "svg-text" }, s, st[0]);
+      [[st[1], "--seq-light", "before"], [st[2], "--seq-dark", "after"]].forEach(([v, c, n], j) => {
+        const yy = top + 5 + j * 13, h = 11;
+        const r = el("rect", { x: L, y: yy, width: Math.max(2, x(v) - L), height: h, rx: 3, fill: css(c) }, s);
+        tip(r, `${st[0]} ${n}: ${v} ms`);
+        el("text", { x: Math.max(x(v), L + 2) + 6, y: yy + h - 1, class: j ? "svg-strong" : "svg-text", "font-size": 12 }, s, `${v}`);
+      });
+    });
+  }
+  legend("st-legend", [["--seq-light", "before: packed hash + no-sync"], ["--seq-dark", "after: final defaults"]]);
+
+  // ---- Stacked step breakdown -------------------------------------------------------
+  const bd = [["PyG (serial)", [142, 38, 52, 238]], ["ours (serial)", [21.1, 19.4, 2.7, 218.8]]];
+  const bdParts = [["sample", "--s1"], ["feature gather", "--s2"], ["copy / prep", "--s3"], ["model train", "--base"]];
+  function drawBreakdown() {
+    const W = 960, rowH = 56, L = 120, R = 90, T = 10;
+    const H = T + bd.length * rowH + 34;
+    const s = svg("bd-chart", W, H, "Training step time split into sampling, gather, copy and model compute for PyG and ours");
+    const max = 480, x = v => L + v / max * (W - L - R);
+    for (let v = 0; v <= max; v += 80) {
+      el("line", { x1: x(v), x2: x(v), y1: T, y2: H - 34, class: "svg-grid" }, s);
+      el("text", { x: x(v), y: H - 12, "text-anchor": "middle", class: "svg-text" }, s, `${v} ms`);
+    }
+    bd.forEach((row, i) => {
+      const yy = T + i * rowH + 10, h = rowH - 22;
+      el("text", { x: L - 12, y: yy + h / 2 + 4, "text-anchor": "end", class: "svg-strong" }, s, row[0]);
+      let acc = 0;
+      row[1].forEach((v, j) => {
+        const r = el("rect", { x: x(acc) + (j ? 1 : 0), y: yy, width: Math.max(1, x(acc + v) - x(acc) - (j ? 1 : 0)), height: h, rx: j === 3 ? 4 : 0, fill: css(bdParts[j][1]) }, s);
+        tip(r, `${row[0]} · ${bdParts[j][0]}: ${v} ms`);
+        if (v > 30) el("text", { x: x(acc) + 6, y: yy + h / 2 + 4, class: "svg-text", fill: "#fff", style: "fill:#fff" }, s, `${Math.round(v)}`);
+        acc += v;
+      });
+      el("text", { x: x(acc) + 8, y: yy + h / 2 + 4, class: "svg-strong" }, s, `${Math.round(acc)} ms`);
+    });
+  }
+  legend("bd-legend", bdParts.map(([t, c]) => [c, t]));
+
+  // ---- End-to-end bars with median ticks ------------------------------------------------
+  const e2e = [["ours, overlapped", 293.8, 291.6, true], ["ours, serial", 297.3, 292.7, true],
+    ["PyG, 2 workers", 396.6, 349.3, false], ["PyG, 0 workers", 496.1, 477.3, false], ["PyG, 4 workers", 668.2, 402.5, false]];
+  function drawE2E() {
+    const W = 960, rowH = 40, L = 140, R = 170, T = 8;
+    const H = T + e2e.length * rowH + 30;
+    const s = svg("e2e-chart", W, H, "Mean and median training step time for our pipeline and PyG with different worker counts");
+    const max = 700, x = v => L + v / max * (W - L - R);
+    for (let v = 0; v <= max; v += 100) {
+      el("line", { x1: x(v), x2: x(v), y1: T, y2: H - 30, class: "svg-grid" }, s);
+      el("text", { x: x(v), y: H - 10, "text-anchor": "middle", class: "svg-text" }, s, `${v} ms`);
+    }
+    e2e.forEach((row, i) => {
+      const yy = T + i * rowH + 8, h = rowH - 16;
+      el("text", { x: L - 12, y: yy + h / 2 + 4, "text-anchor": "end", class: row[3] ? "svg-strong" : "svg-text" }, s, row[0]);
+      const r = el("rect", { x: L, y: yy, width: x(row[1]) - L, height: h, rx: 4, fill: css(row[3] ? "--s1" : "--base") }, s);
+      tip(r, `${row[0]}: mean ${row[1]} ms, median ${row[2]} ms`);
+      el("line", { x1: x(row[2]), x2: x(row[2]), y1: yy - 4, y2: yy + h + 4, stroke: css("--ink"), "stroke-width": 2 }, s);
+      el("text", { x: x(row[1]) + 8, y: yy + h / 2 + 4, class: "svg-text" }, s, `mean ${row[1]} · median ${row[2]}`);
+    });
+  }
+  legend("e2e-legend", [["--s1", "ours"], ["--base", "PyG + NeighborLoader-style workers"]]);
+  document.getElementById("e2e-legend").insertAdjacentHTML("beforeend",
+    `<span><i style="display:inline-block;width:2px;height:14px;background:var(--ink)"></i>median</span>`);
+
+  // ---- Accuracy lines ------------------------------------------------------------------
+  const accO = [0.8734, 0.8904, 0.8934, 0.8978, 0.9013], accP = [0.8734, 0.8901, 0.8941, 0.8989, 0.8994];
+  function drawAcc() {
+    const W = 520, H = 300, L = 58, R = 70, T = 14, B = 40;
+    const s = svg("acc-chart", W, H, "Validation accuracy per epoch for our sampler and PyG, mean of three seeds");
+    const y0 = 0.870, y1 = 0.905, y = v => T + (y1 - v) / (y1 - y0) * (H - T - B);
+    const x = i => L + i * (W - L - R) / 4;
+    for (let v = 0.870; v <= 0.9051; v += 0.005) {
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "svg-grid" }, s);
+      el("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end", class: "svg-text" }, s, fmt(v, 3));
+    }
+    for (let i = 0; i < 5; i++) el("text", { x: x(i), y: H - 14, "text-anchor": "middle", class: "svg-text" }, s, `epoch ${i + 1}`);
+    [[accO, "--s1", "ours"], [accP, "--s2", "PyG"]].forEach(([d, c, n], k) => {
+      el("polyline", { points: d.map((v, i) => `${x(i)},${y(v)}`).join(" "), fill: "none", stroke: css(c), "stroke-width": 2 }, s);
+      d.forEach((v, i) => { const p = el("circle", { cx: x(i), cy: y(v), r: 4.5, fill: css(c), stroke: css("--surface"), "stroke-width": 2 }, s); tip(p, `${n} · epoch ${i + 1}: ${fmt(v, 4)}`); });
+      el("text", { x: W - R + 8, y: y(d[4]) + (k ? 12 : -4), class: "svg-strong" }, s, `${n} ${fmt(d[4], 4)}`);
+    });
+  }
+  legend("acc-legend", [["--s1", "ours"], ["--s2", "PyG"]]);
+
+  // ---- Decision records -------------------------------------------------------------
+  const dec = [
+    ["D1", "Fanout [15,10,5], 3 layers, without replacement", "fixed", "matches SALIENT, DSP, BGL, GraphBolt setups"],
+    ["D2", "SYCL (DPC++) instead of CUDA", "open", "runs on Intel iGPU and CPU; cost on NVIDIA to be measured with a plain-CUDA control kernel"],
+    ["D3", "CSC with int64 indptr, int32 indices", "keep", "halves bandwidth per sampled edge; all graphs < 2³¹ nodes"],
+    ["D4", "Floyd's algorithm for sampling without replacement", "keep", "O(k) per node regardless of degree; chi-square uniformity test passes"],
+    ["D5", "Degree-aware work mapping", "keep", "realized as sub-group sampling: 0.90–0.98"],
+    ["D6", "GPU hash table for dedup and relabel", "keep", "evolved: packed → generation tags → direct map (D13, D17, D18)"],
+    ["D7", "Counter-based Philox RNG", "keep", "bit-identical output across devices and work mappings; matches Random123 known answers"],
+    ["D8", "Baseline protocol: warm-up excluded, workers swept", "keep", "PyG measured with 0/2/4/6 workers; best used"],
+    ["D9", "Measure the bottleneck before kernel work", "keep", "three measurements; two artifacts found (untrimmed layers, column-major features)"],
+    ["D10", "PyG semantics: expand only newly found nodes", "keep", "output is a drop-in for NeighborLoader"],
+    ["D11", "GPU gather from zero-copy host memory", "keep", "host USM reads as fast as device memory on the iGPU (21.9 vs 24.2 ms)"],
+    ["D12", "Paired, interleaved A/B for every optimization", "keep", "iGPU speed drifts up to 2× between runs"],
+    ["D13", "Sampler optimization ladder", "keep", "1.69–2.02× vs v1 measured directly"],
+    ["D14", "End-to-end vs PyG with workers", "keep", "1.35× mean step time, 1 CPU core"],
+    ["D15", "Accuracy parity", "keep", "test +0.001 (p = 0.90), val +0.002 (p = 0.63)"],
+    ["D16", "Overlap sampling with training", "keep", "0.957–0.966 on the iGPU; more expected on a discrete GPU"],
+    ["D17", "Label early + half-size hash table", "keep", "relabel 2.4 → 0.9 ms; 0.907–0.927"],
+    ["D18", "Direct-mapped dedup, no node_slot writes", "keep", "products −5 to −7%, Orkut −2 to −5% over three runs"],
+    ["D19", "Scale to Twitter-2010 with a chunked file-to-GPU loader", "keep", "5.9× vs pyg-lib at 1.47 B edges; 1.76× vs v1 paired"],
+  ];
+  const pillFor = st => st === "keep" ? `<span class="pill keep">kept</span>` : st === "open" ? `<span class="pill open">open</span>` : `<span class="pill fixed">fixed</span>`;
+  document.getElementById("dec-body").innerHTML = dec.map(d =>
+    `<tr><td class="mono">${d[0]}</td><td>${d[1]}</td><td>${pillFor(d[2])}</td><td>${d[3]}</td></tr>`).join("");
+
+  function drawAll() { drawLadder(); drawPerBatch(); drawStages(); drawBreakdown(); drawE2E(); drawAcc(); }
+  drawAll();
+  // Redraw when the theme changes, since SVG fills read the theme tokens.
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll); } catch (e) {}
+  try { new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) {}
+})();
+</script>

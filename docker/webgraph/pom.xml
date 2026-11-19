@@ -1,0 +1,14 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <!-- Only used to fetch WebGraph and its dependencies into lib/ for the converter. -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>gnnsample</groupId>
+  <artifactId>webgraph-deps</artifactId>
+  <version>1</version>
+  <dependencies>
+    <dependency>
+      <groupId>it.unimi.dsi</groupId>
+      <artifactId>webgraph</artifactId>
+      <version>[3.6,3.7)</version>
+    </dependency>
+  </dependencies>
+</project>
